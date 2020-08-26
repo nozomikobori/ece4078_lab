@@ -12,7 +12,7 @@ class Keyboard:
     # feel free to change the speed, or add keys to do so
     wheel_vel_forward = 100
     wheel_vel_rotation = 20
-
+    
     def __init__(self, ppi=None):
         # storage for key presses
         self.directions = [False for _ in range(4)]
