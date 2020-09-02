@@ -43,6 +43,11 @@ class Slam:
         # TODO: implement the prediction step of EKF
         # ------------------------------------------
         # ----------- Add your code here -----------
+        self.robot.drive(raw_drive_meas)
+        A = self.state_transition(raw_drive_meas) # shape of A is (13,13) 
+        Q = self.predict_covariance(raw_drive_meas) # shape of Q is (13,13)
+        # compute self.P (sigma_t)
+        self.P = A @ self.P @ A.T + Q
         # ------------------------------------------
 
 
@@ -64,11 +69,26 @@ class Slam:
         # TODO: compute own measurements
         z_hat = self.robot.measure(self.markers, idx_list)
         z_hat = z_hat.reshape((-1,1),order="F")
-        H = self.robot.derivative_measure(self.markers, idx_list)
 
-        x = self.get_state_vector()
+        #H = self.robot.derivative_measure(self.markers, idx_list)
+
+        # x = self.get_state_vector()
         # ------------------------------------------
         # ----------- Add your code here -----------
+
+        C = self.robot.derivative_measure(self.markers, idx_list)
+        x_hat = self.get_state_vector()
+        # compute the Kalman Gain
+        S = C @ self.P @ C.T + R
+        K = self.P @ C.T @ np.linalg.inv(S) 
+        # correct state
+        y = z - z_hat
+        x = x_hat + K @ y
+        # get state estimate
+        self.set_state_vector(x)
+        # correct robot's covariance
+        self.P = (np.eye(x.shape[0]) - K @ C) @ self.P
+
         # ------------------------------------------
 
 
